@@ -4,3 +4,22 @@ window.log = function f(){ log.history = log.history || []; log.history.push(arg
 
 
 
+$.fn.codemirror = function () {
+
+  this.each(function (idx, elem) {
+    var code = document.createElement('div');
+
+    $( elem )
+      .before( code )
+      .addClass( 'hidden' );
+
+    CodeMirror( code, {
+      value: elem.innerHTML,
+      mode: 'javascript',
+      lineNumbers: true,
+      readOnly: true
+    });
+  });
+
+  return this;
+}
