@@ -1,0 +1,147 @@
+[
+  {
+    "tags": [],
+    "description": {
+      "full": "<p>Module dependencies.</p>",
+      "summary": "<p>Module dependencies.</p>",
+      "body": ""
+    },
+    "ignore": false,
+    "code": "var path = require('path')\n  , fs = require('fs')\n  , utils = require('./utils')\n  , dirname = path.dirname\n  , basename = path.basename\n  , extname = path.extname\n  , exists = fs.existsSync || path.existsSync \n  , join = path.join;",
+    "ctx": {
+      "type": "declaration",
+      "name": "path",
+      "value": "require('path')",
+      "string": "path"
+    }
+  },
+  {
+    "tags": [],
+    "description": {
+      "full": "<p>Expose <code>View</code>.</p>",
+      "summary": "<p>Expose <code>View</code>.</p>",
+      "body": ""
+    },
+    "ignore": false,
+    "code": "module.exports = View;",
+    "ctx": {
+      "type": "property",
+      "receiver": "module",
+      "name": "exports",
+      "value": "View",
+      "string": "module.exports"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "param",
+        "types": [
+          "String"
+        ],
+        "name": "name",
+        "description": ""
+      },
+      {
+        "type": "param",
+        "types": [
+          "Object"
+        ],
+        "name": "options",
+        "description": ""
+      },
+      {
+        "type": "api",
+        "visibility": "private"
+      }
+    ],
+    "description": {
+      "full": "<p>Initialize a new <code>View</code> with the given <code>name</code>.</p>\n\n<h2>Options</h2>\n\n<ul>\n<li><code>defaultEngine</code> the default template engine name </li>\n<li><code>engines</code> template engine require() cache </li>\n<li><code>root</code> root path for view lookup </li>\n</ul>",
+      "summary": "<p>Initialize a new <code>View</code> with the given <code>name</code>.</p>",
+      "body": "<h2>Options</h2>\n\n<ul>\n<li><code>defaultEngine</code> the default template engine name </li>\n<li><code>engines</code> template engine require() cache </li>\n<li><code>root</code> root path for view lookup </li>\n</ul>"
+    },
+    "isPrivate": true,
+    "ignore": false,
+    "code": "function View(name, options) {\n  options = options || {};\n  this.name = name;\n  this.root = options.root;\n  var engines = options.engines;\n  this.defaultEngine = options.defaultEngine;\n  var ext = this.ext = extname(name);\n  if (!ext) name += (ext = this.ext = '.' + this.defaultEngine);\n  this.engine = engines[ext] || (engines[ext] = require(ext.slice(1)).__express);\n  this.path = this.lookup(name);\n}",
+    "ctx": {
+      "type": "function",
+      "name": "View",
+      "string": "View()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "param",
+        "types": [
+          "String"
+        ],
+        "name": "path",
+        "description": ""
+      },
+      {
+        "type": "return",
+        "types": [
+          "String"
+        ],
+        "description": ""
+      },
+      {
+        "type": "api",
+        "visibility": "private"
+      }
+    ],
+    "description": {
+      "full": "<p>Lookup view by the given <code>path</code></p>",
+      "summary": "<p>Lookup view by the given <code>path</code></p>",
+      "body": ""
+    },
+    "isPrivate": true,
+    "ignore": false,
+    "code": "View.prototype.lookup = function(path){\n  var ext = this.ext;\n\n  // <path>.<engine>\n  if (!utils.isAbsolute(path)) path = join(this.root, path);\n  if (exists(path)) return path;\n\n  // <path>/index.<engine>\n  path = join(dirname(path), basename(path, ext), 'index' + ext);\n  if (exists(path)) return path;\n};",
+    "ctx": {
+      "type": "method",
+      "constructor": "View",
+      "name": "lookup",
+      "string": "View.prototype.lookup()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "param",
+        "types": [
+          "Object"
+        ],
+        "name": "options",
+        "description": ""
+      },
+      {
+        "type": "param",
+        "types": [
+          "Function"
+        ],
+        "name": "fn",
+        "description": ""
+      },
+      {
+        "type": "api",
+        "visibility": "private"
+      }
+    ],
+    "description": {
+      "full": "<p>Render with the given <code>options</code> and callback <code>fn(err, str)</code>.</p>",
+      "summary": "<p>Render with the given <code>options</code> and callback <code>fn(err, str)</code>.</p>",
+      "body": ""
+    },
+    "isPrivate": true,
+    "ignore": false,
+    "code": "View.prototype.render = function(options, fn){\n  this.engine(this.path, options, fn);\n};",
+    "ctx": {
+      "type": "method",
+      "constructor": "View",
+      "name": "render",
+      "string": "View.prototype.render()"
+    }
+  }
+]

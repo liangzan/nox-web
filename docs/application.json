@@ -1,0 +1,615 @@
+[
+  {
+    "tags": [],
+    "description": {
+      "full": "<p>Module dependencies.</p>",
+      "summary": "<p>Module dependencies.</p>",
+      "body": ""
+    },
+    "ignore": false,
+    "code": "var connect = require('connect')\n  , Router = require('./router')\n  , methods = require('methods')\n  , middleware = require('./middleware')\n  , debug = require('debug')('express:application')\n  , locals = require('./utils').locals\n  , View = require('./view')\n  , url = require('url')\n  , utils = connect.utils\n  , path = require('path')\n  , http = require('http')\n  , join = path.join\n  , fs = require('fs');",
+    "ctx": {
+      "type": "declaration",
+      "name": "connect",
+      "value": "require('connect')",
+      "string": "connect"
+    }
+  },
+  {
+    "tags": [],
+    "description": {
+      "full": "<p>Application prototype.</p>",
+      "summary": "<p>Application prototype.</p>",
+      "body": ""
+    },
+    "ignore": false,
+    "code": "var app = exports = module.exports = {};",
+    "ctx": {
+      "type": "declaration",
+      "name": "app",
+      "value": "exports = module.exports = {}",
+      "string": "app"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "api",
+        "visibility": "private"
+      }
+    ],
+    "description": {
+      "full": "<p>Initialize the server.</p>\n\n<ul>\n<li>setup default configuration</li>\n<li>setup default middleware</li>\n<li>setup route reflection methods</li>\n</ul>",
+      "summary": "<p>Initialize the server.</p>",
+      "body": "<ul>\n<li>setup default configuration</li>\n<li>setup default middleware</li>\n<li>setup route reflection methods</li>\n</ul>"
+    },
+    "isPrivate": true,
+    "ignore": false,
+    "code": "app.init = function(){\n  var self = this;\n  this.cache = {};\n  this.settings = {};\n  this.engines = {};\n  this.viewCallbacks = [];\n  this.defaultConfiguration();\n};",
+    "ctx": {
+      "type": "method",
+      "receiver": "app",
+      "name": "init",
+      "string": "app.init()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "api",
+        "visibility": "private"
+      }
+    ],
+    "description": {
+      "full": "<p>Initialize application configuration.</p>",
+      "summary": "<p>Initialize application configuration.</p>",
+      "body": ""
+    },
+    "isPrivate": true,
+    "ignore": false,
+    "code": "app.defaultConfiguration = function(){\n  var self = this;\n\n  // default settings\n  this.set('env', process.env.NODE_ENV || 'development');\n  debug('booting in %s mode', this.get('env'));\n\n  // implicit middleware\n  this.use(connect.query());\n  this.use(middleware.init(this));\n\n  // inherit protos\n  this.on('mount', function(parent){\n    this.request.__proto__ = parent.request;\n    this.response.__proto__ = parent.response;\n    this.engines.__proto__ = parent.engines;\n  });\n\n  // router\n  this._router = new Router(this);\n  this.routes = this._router.map;\n  this.__defineGetter__('router', function(){\n    this._usedRouter = true;\n    this._router.caseSensitive = this.enabled('case sensitive routing');\n    this._router.strict = this.enabled('strict routing');\n    return this._router.middleware;\n  });\n\n  // setup locals\n  this.locals = locals(this);\n\n  // default locals\n  this.locals.settings = this.settings;\n\n  // default configuration\n  this.enable('jsonp callback');\n  this.set('jsonp callback name', 'callback');\n\n  this.configure('development', function(){\n    this.set('json spaces', 2);\n  });\n\n  this.configure('production', function(){\n    this.enable('view cache');\n  });\n};",
+    "ctx": {
+      "type": "method",
+      "receiver": "app",
+      "name": "defaultConfiguration",
+      "string": "app.defaultConfiguration()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "param",
+        "types": [
+          "String",
+          "Function",
+          "Server"
+        ],
+        "name": "route",
+        "description": ""
+      },
+      {
+        "type": "param",
+        "types": [
+          "Function",
+          "Server"
+        ],
+        "name": "fn",
+        "description": ""
+      },
+      {
+        "type": "return",
+        "types": [
+          "app"
+        ],
+        "description": "for chaining"
+      },
+      {
+        "type": "api",
+        "visibility": "public"
+      }
+    ],
+    "description": {
+      "full": "<p>Proxy <code>connect#use()</code> to apply settings to<br />mounted applications.</p>",
+      "summary": "<p>Proxy <code>connect#use()</code> to apply settings to<br />mounted applications.</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "app.use = function(route, fn){\n  var app, home, handle;\n\n  // default route to '/'\n  if ('string' != typeof route) fn = route, route = '/';\n\n  // express app\n  if (fn.handle && fn.set) app = fn;\n\n  // restore .app property on req and res\n  if (app) {\n    app.route = route;\n    fn = function(req, res, next) {\n      var orig = req.app;\n      app.handle(req, res, function(err){\n        req.app = res.app = orig;\n        req.__proto__ = orig.request;\n        res.__proto__ = orig.response;\n        next(err);\n      });\n    };\n  }\n\n  connect.proto.use.call(this, route, fn);\n\n  // mounted an app\n  if (app) {\n    app.parent = this;\n    app.emit('mount', this);\n  }\n\n  return this;\n};",
+    "ctx": {
+      "type": "method",
+      "receiver": "app",
+      "name": "use",
+      "string": "app.use()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "param",
+        "types": [
+          "String"
+        ],
+        "name": "ext",
+        "description": ""
+      },
+      {
+        "type": "param",
+        "types": [
+          "Function"
+        ],
+        "name": "fn",
+        "description": ""
+      },
+      {
+        "type": "return",
+        "types": [
+          "app"
+        ],
+        "description": "for chaining"
+      },
+      {
+        "type": "api",
+        "visibility": "public"
+      }
+    ],
+    "description": {
+      "full": "<p>Register the given template engine callback <code>fn</code><br />as <code>ext</code>.</p>\n\n<p>By default will <code>require()</code> the engine based on the<br />file extension. For example if you try to render<br />a \"foo.jade\" file Express will invoke the following internally:</p>\n\n<pre><code>app.engine('jade', require('jade').__express);\n</code></pre>\n\n<p>For engines that do not provide <code>.__express</code> out of the box,<br />or if you wish to \"map\" a different extension to the template engine<br />you may use this method. For example mapping the EJS template engine to<br />\".html\" files:</p>\n\n<pre><code>app.engine('html', require('ejs').renderFile);\n</code></pre>\n\n<p>In this case EJS provides a <code>.renderFile()</code> method with<br />the same signature that Express expects: <code>(path, options, callback)</code>,<br />though note that it aliases this method as <code>ejs.__express</code> internally<br />so if you're using \".ejs\" extensions you dont need to do anything.</p>\n\n<p>Some template engines do not follow this convention, the<br /><a href=\"https://github.com/visionmedia/consolidate.js\">Consolidate.js</a><br />library was created to map all of node's popular template<br />engines to follow this convention, thus allowing them to<br />work seemlessly within Express.</p>",
+      "summary": "<p>Register the given template engine callback <code>fn</code><br />as <code>ext</code>.</p>",
+      "body": "<p>By default will <code>require()</code> the engine based on the<br />file extension. For example if you try to render<br />a \"foo.jade\" file Express will invoke the following internally:</p>\n\n<pre><code>app.engine('jade', require('jade').__express);\n</code></pre>\n\n<p>For engines that do not provide <code>.__express</code> out of the box,<br />or if you wish to \"map\" a different extension to the template engine<br />you may use this method. For example mapping the EJS template engine to<br />\".html\" files:</p>\n\n<pre><code>app.engine('html', require('ejs').renderFile);\n</code></pre>\n\n<p>In this case EJS provides a <code>.renderFile()</code> method with<br />the same signature that Express expects: <code>(path, options, callback)</code>,<br />though note that it aliases this method as <code>ejs.__express</code> internally<br />so if you're using \".ejs\" extensions you dont need to do anything.</p>\n\n<p>Some template engines do not follow this convention, the<br /><a href=\"https://github.com/visionmedia/consolidate.js\">Consolidate.js</a><br />library was created to map all of node's popular template<br />engines to follow this convention, thus allowing them to<br />work seemlessly within Express.</p>"
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "app.engine = function(ext, fn){\n  if ('function' != typeof fn) throw new Error('callback function required');\n  if ('.' != ext[0]) ext = '.' + ext;\n  this.engines[ext] = fn;\n  return this;\n};",
+    "ctx": {
+      "type": "method",
+      "receiver": "app",
+      "name": "engine",
+      "string": "app.engine()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "param",
+        "types": [
+          "String",
+          "Array"
+        ],
+        "name": "name",
+        "description": ""
+      },
+      {
+        "type": "param",
+        "types": [
+          "Function"
+        ],
+        "name": "fn",
+        "description": ""
+      },
+      {
+        "type": "return",
+        "types": [
+          "app"
+        ],
+        "description": "for chaining"
+      },
+      {
+        "type": "api",
+        "visibility": "public"
+      }
+    ],
+    "description": {
+      "full": "<p>Map the given param placeholder <code>name</code>(s) to the given callback(s).</p>\n\n<p>Parameter mapping is used to provide pre-conditions to routes<br />which use normalized placeholders. For example a <em>:user_id</em> parameter<br />could automatically load a user's information from the database without<br />any additional code,</p>\n\n<p>The callback uses the samesignature as middleware, the only differencing<br />being that the value of the placeholder is passed, in this case the <em>id</em><br />of the user. Once the <code>next()</code> function is invoked, just like middleware<br />it will continue on to execute the route, or subsequent parameter functions.</p>\n\n<pre><code> app.param('user_id', function(req, res, next, id){\n   User.find(id, function(err, user){\n     if (err) {\n       next(err);\n     } else if (user) {\n       req.user = user;\n       next();\n     } else {\n       next(new Error('failed to load user'));\n     }\n   });\n });\n</code></pre>",
+      "summary": "<p>Map the given param placeholder <code>name</code>(s) to the given callback(s).</p>",
+      "body": "<p>Parameter mapping is used to provide pre-conditions to routes<br />which use normalized placeholders. For example a <em>:user_id</em> parameter<br />could automatically load a user's information from the database without<br />any additional code,</p>\n\n<p>The callback uses the samesignature as middleware, the only differencing<br />being that the value of the placeholder is passed, in this case the <em>id</em><br />of the user. Once the <code>next()</code> function is invoked, just like middleware<br />it will continue on to execute the route, or subsequent parameter functions.</p>\n\n<pre><code> app.param('user_id', function(req, res, next, id){\n   User.find(id, function(err, user){\n     if (err) {\n       next(err);\n     } else if (user) {\n       req.user = user;\n       next();\n     } else {\n       next(new Error('failed to load user'));\n     }\n   });\n });\n</code></pre>"
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "app.param = function(name, fn){\n  var self = this\n    , fns = [].slice.call(arguments, 1);\n\n  // array\n  if (Array.isArray(name)) {\n    name.forEach(function(name){\n      fns.forEach(function(fn){\n        self.param(name, fn);\n      });\n    });\n  // param logic\n  } else if ('function' == typeof name) {\n    this._router.param(name);\n  // single\n  } else {\n    if (':' == name[0]) name = name.substr(1);\n    fns.forEach(function(fn){\n      self._router.param(name, fn);\n    });\n  }\n\n  return this;\n};",
+    "ctx": {
+      "type": "method",
+      "receiver": "app",
+      "name": "param",
+      "string": "app.param()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "param",
+        "types": [
+          "String"
+        ],
+        "name": "setting",
+        "description": ""
+      },
+      {
+        "type": "param",
+        "types": [
+          "String"
+        ],
+        "name": "val",
+        "description": ""
+      },
+      {
+        "type": "return",
+        "types": [
+          "Server"
+        ],
+        "description": "for chaining"
+      },
+      {
+        "type": "api",
+        "visibility": "public"
+      }
+    ],
+    "description": {
+      "full": "<p>Assign <code>setting</code> to <code>val</code>, or return <code>setting</code>'s value.</p>\n\n<p>app.set('foo', 'bar');<br />   app.get('foo');<br />   // => \"bar\"</p>\n\n<p>Mounted servers inherit their parent server's settings.</p>",
+      "summary": "<p>Assign <code>setting</code> to <code>val</code>, or return <code>setting</code>'s value.</p>",
+      "body": "<p>app.set('foo', 'bar');<br />   app.get('foo');<br />   // => \"bar\"</p>\n\n<p>Mounted servers inherit their parent server's settings.</p>"
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "app.set = function(setting, val){\n  if (1 == arguments.length) {\n    if (this.settings.hasOwnProperty(setting)) {\n      return this.settings[setting];\n    } else if (this.parent) {\n      return this.parent.set(setting);\n    }\n  } else {\n    this.settings[setting] = val;\n    return this;\n  }\n};",
+    "ctx": {
+      "type": "method",
+      "receiver": "app",
+      "name": "set",
+      "string": "app.set()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "return",
+        "types": [
+          "String"
+        ],
+        "description": ""
+      },
+      {
+        "type": "api",
+        "visibility": "private"
+      }
+    ],
+    "description": {
+      "full": "<p>Return the app's absolute pathname<br />based on the parent(s) that have<br />mounted it.</p>\n\n<p>For example if the application was<br />mounted as \"/admin\", which itself<br />was mounted as \"/blog\" then the<br />return value would be \"/blog/admin\".</p>",
+      "summary": "<p>Return the app's absolute pathname<br />based on the parent(s) that have<br />mounted it.</p>",
+      "body": "<p>For example if the application was<br />mounted as \"/admin\", which itself<br />was mounted as \"/blog\" then the<br />return value would be \"/blog/admin\".</p>"
+    },
+    "isPrivate": true,
+    "ignore": false,
+    "code": "app.path = function(){\n  return this.parent\n    ? this.parent.path() + this.route\n    : '';\n};",
+    "ctx": {
+      "type": "method",
+      "receiver": "app",
+      "name": "path",
+      "string": "app.path()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "param",
+        "types": [
+          "String"
+        ],
+        "name": "setting",
+        "description": ""
+      },
+      {
+        "type": "return",
+        "types": [
+          "Boolean"
+        ],
+        "description": ""
+      },
+      {
+        "type": "api",
+        "visibility": "public"
+      }
+    ],
+    "description": {
+      "full": "<p>Check if <code>setting</code> is enabled (truthy).</p>\n\n<p>app.enabled('foo')<br />   // => false</p>\n\n<p>app.enable('foo')<br />   app.enabled('foo')<br />   // => true</p>",
+      "summary": "<p>Check if <code>setting</code> is enabled (truthy).</p>",
+      "body": "<p>app.enabled('foo')<br />   // => false</p>\n\n<p>app.enable('foo')<br />   app.enabled('foo')<br />   // => true</p>"
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "app.enabled = function(setting){\n  return !!this.set(setting);\n};",
+    "ctx": {
+      "type": "method",
+      "receiver": "app",
+      "name": "enabled",
+      "string": "app.enabled()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "param",
+        "types": [
+          "String"
+        ],
+        "name": "setting",
+        "description": ""
+      },
+      {
+        "type": "return",
+        "types": [
+          "Boolean"
+        ],
+        "description": ""
+      },
+      {
+        "type": "api",
+        "visibility": "public"
+      }
+    ],
+    "description": {
+      "full": "<p>Check if <code>setting</code> is disabled.</p>\n\n<p>app.disabled('foo')<br />   // => true</p>\n\n<p>app.enable('foo')<br />   app.disabled('foo')<br />   // => false</p>",
+      "summary": "<p>Check if <code>setting</code> is disabled.</p>",
+      "body": "<p>app.disabled('foo')<br />   // => true</p>\n\n<p>app.enable('foo')<br />   app.disabled('foo')<br />   // => false</p>"
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "app.disabled = function(setting){\n  return !this.set(setting);\n};",
+    "ctx": {
+      "type": "method",
+      "receiver": "app",
+      "name": "disabled",
+      "string": "app.disabled()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "param",
+        "types": [
+          "String"
+        ],
+        "name": "setting",
+        "description": ""
+      },
+      {
+        "type": "return",
+        "types": [
+          "app"
+        ],
+        "description": "for chaining"
+      },
+      {
+        "type": "api",
+        "visibility": "public"
+      }
+    ],
+    "description": {
+      "full": "<p>Enable <code>setting</code>.</p>",
+      "summary": "<p>Enable <code>setting</code>.</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "app.enable = function(setting){\n  return this.set(setting, true);\n};",
+    "ctx": {
+      "type": "method",
+      "receiver": "app",
+      "name": "enable",
+      "string": "app.enable()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "param",
+        "types": [
+          "String"
+        ],
+        "name": "setting",
+        "description": ""
+      },
+      {
+        "type": "return",
+        "types": [
+          "app"
+        ],
+        "description": "for chaining"
+      },
+      {
+        "type": "api",
+        "visibility": "public"
+      }
+    ],
+    "description": {
+      "full": "<p>Disable <code>setting</code>.</p>",
+      "summary": "<p>Disable <code>setting</code>.</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "app.disable = function(setting){\n  return this.set(setting, false);\n};",
+    "ctx": {
+      "type": "method",
+      "receiver": "app",
+      "name": "disable",
+      "string": "app.disable()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "param",
+        "types": [
+          "String"
+        ],
+        "name": "env...",
+        "description": ""
+      },
+      {
+        "type": "param",
+        "types": [
+          "Function"
+        ],
+        "name": "fn",
+        "description": ""
+      },
+      {
+        "type": "return",
+        "types": [
+          "app"
+        ],
+        "description": "for chaining"
+      },
+      {
+        "type": "api",
+        "visibility": "public"
+      }
+    ],
+    "description": {
+      "full": "<p>Configure callback for zero or more envs,<br />when no <code>env</code> is specified that callback will<br />be invoked for all environments. Any combination<br />can be used multiple times, in any order desired.</p>\n\n<h2>Examples</h2>\n\n<p>app.configure(function(){<br />     // executed for all envs<br />   });</p>\n\n<p>app.configure('stage', function(){<br />     // executed staging env<br />   });</p>\n\n<p>app.configure('stage', 'production', function(){<br />     // executed for stage and production<br />   });</p>\n\n<h2>Note</h2>\n\n<p>These callbacks are invoked immediately, and<br /> are effectively sugar for the following:</p>\n\n<pre><code>var env = process.env.NODE_ENV || 'development';\n\n switch (env) {\n   case 'development':\n     ...\n     break;\n   case 'stage':\n     ...\n     break;\n   case 'production':\n     ...\n     break;\n }\n</code></pre>",
+      "summary": "<p>Configure callback for zero or more envs,<br />when no <code>env</code> is specified that callback will<br />be invoked for all environments. Any combination<br />can be used multiple times, in any order desired.</p>",
+      "body": "<h2>Examples</h2>\n\n<p>app.configure(function(){<br />     // executed for all envs<br />   });</p>\n\n<p>app.configure('stage', function(){<br />     // executed staging env<br />   });</p>\n\n<p>app.configure('stage', 'production', function(){<br />     // executed for stage and production<br />   });</p>\n\n<h2>Note</h2>\n\n<p>These callbacks are invoked immediately, and<br /> are effectively sugar for the following:</p>\n\n<pre><code>var env = process.env.NODE_ENV || 'development';\n\n switch (env) {\n   case 'development':\n     ...\n     break;\n   case 'stage':\n     ...\n     break;\n   case 'production':\n     ...\n     break;\n }\n</code></pre>"
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "app.configure = function(env, fn){\n  var envs = 'all'\n    , args = [].slice.call(arguments);\n  fn = args.pop();\n  if (args.length) envs = args;\n  if ('all' == envs || ~envs.indexOf(this.settings.env)) fn.call(this);\n  return this;\n};",
+    "ctx": {
+      "type": "method",
+      "receiver": "app",
+      "name": "configure",
+      "string": "app.configure()"
+    }
+  },
+  {
+    "tags": [],
+    "description": {
+      "full": "<p>Delegate <code>.VERB(...)</code> calls to <code>.route(VERB, ...)</code>.</p>",
+      "summary": "<p>Delegate <code>.VERB(...)</code> calls to <code>.route(VERB, ...)</code>.</p>",
+      "body": ""
+    },
+    "ignore": false,
+    "code": "methods.forEach(function(method){\n  app[method] = function(path){\n    if ('get' == method && 1 == arguments.length) return this.set(path); \n    var args = [method].concat([].slice.call(arguments));\n    if (!this._usedRouter) this.use(this.router);\n    return this._router.route.apply(this._router, args);\n  }\n});"
+  },
+  {
+    "tags": [
+      {
+        "type": "param",
+        "types": [
+          "String"
+        ],
+        "name": "path",
+        "description": ""
+      },
+      {
+        "type": "param",
+        "types": [
+          "Function"
+        ],
+        "name": "...",
+        "description": ""
+      },
+      {
+        "type": "return",
+        "types": [
+          "app"
+        ],
+        "description": "for chaining"
+      },
+      {
+        "type": "api",
+        "visibility": "public"
+      }
+    ],
+    "description": {
+      "full": "<p>Special-cased \"all\" method, applying the given route <code>path</code>,<br />middleware, and callback to <em>every</em> HTTP method.</p>",
+      "summary": "<p>Special-cased \"all\" method, applying the given route <code>path</code>,<br />middleware, and callback to <em>every</em> HTTP method.</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "app.all = function(path){\n  var args = arguments;\n  methods.forEach(function(method){\n    app[method].apply(this, args);\n  }, this);\n  return this;\n};\n\n// del -> delete alias\n\napp.del = app.delete;",
+    "ctx": {
+      "type": "method",
+      "receiver": "app",
+      "name": "all",
+      "string": "app.all()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "param",
+        "types": [
+          "String"
+        ],
+        "name": "name",
+        "description": ""
+      },
+      {
+        "type": "param",
+        "types": [
+          "String",
+          "Function"
+        ],
+        "name": "options",
+        "description": "or fn"
+      },
+      {
+        "type": "param",
+        "types": [
+          "Function"
+        ],
+        "name": "fn",
+        "description": ""
+      },
+      {
+        "type": "api",
+        "visibility": "public"
+      }
+    ],
+    "description": {
+      "full": "<p>Render the given view <code>name</code> name with <code>options</code><br />and a callback accepting an error and the<br />rendered template string.</p>\n\n<h2>Example</h2>\n\n<p>app.render('email', { name: 'Tobi' }, function(err, html){<br />     // ...<br />   })</p>",
+      "summary": "<p>Render the given view <code>name</code> name with <code>options</code><br />and a callback accepting an error and the<br />rendered template string.</p>",
+      "body": "<h2>Example</h2>\n\n<p>app.render('email', { name: 'Tobi' }, function(err, html){<br />     // ...<br />   })</p>"
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "app.render = function(name, options, fn){\n  var self = this\n    , opts = {}\n    , cache = this.cache\n    , engines = this.engines\n    , view;\n\n  // support callback function as second arg\n  if ('function' == typeof options) {\n    fn = options, options = {};\n  }\n\n  // merge app.locals\n  utils.merge(opts, this.locals);\n\n  // merge options.locals\n  if (options.locals) utils.merge(opts, options.locals);\n\n  // merge options\n  utils.merge(opts, options);\n\n  // set .cache unless explicitly provided\n  opts.cache = null == opts.cache\n    ? this.enabled('view cache')\n    : opts.cache;\n\n  // primed cache\n  if (opts.cache) view = cache[name];\n\n  // view\n  if (!view) {\n    view = new View(name, {\n        defaultEngine: this.get('view engine')\n      , root: this.get('views') || process.cwd() + '/views'\n      , engines: engines\n    });\n\n    if (!view.path) {\n      var err = new Error('Failed to lookup view \"' + name + '\"');\n      err.view = view;\n      return fn(err);\n    }\n\n    // prime the cache\n    if (opts.cache) cache[name] = view;\n  }\n\n  // render\n  try {\n    view.render(opts, fn);\n  } catch (err) {\n    fn(err);\n  }\n};",
+    "ctx": {
+      "type": "method",
+      "receiver": "app",
+      "name": "render",
+      "string": "app.render()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "return",
+        "types": [
+          "http.Server"
+        ],
+        "description": ""
+      },
+      {
+        "type": "api",
+        "visibility": "public"
+      }
+    ],
+    "description": {
+      "full": "<p>Listen for connections.</p>\n\n<p>A node <code>http.Server</code> is returned, with this<br />application (which is a <code>Function</code>) as its<br />callback. If you wish to create both an HTTP<br />and HTTPS server you may do so with the \"http\"<br />and \"https\" modules as shown here:</p>\n\n<p>var http = require('http')<br />     , https = require('https')<br />     , express = require('express')<br />     , app = express();</p>\n\n<p>http.createServer(app).listen(80);<br />   http.createServer({ ... }, app).listen(443);</p>",
+      "summary": "<p>Listen for connections.</p>",
+      "body": "<p>A node <code>http.Server</code> is returned, with this<br />application (which is a <code>Function</code>) as its<br />callback. If you wish to create both an HTTP<br />and HTTPS server you may do so with the \"http\"<br />and \"https\" modules as shown here:</p>\n\n<p>var http = require('http')<br />     , https = require('https')<br />     , express = require('express')<br />     , app = express();</p>\n\n<p>http.createServer(app).listen(80);<br />   http.createServer({ ... }, app).listen(443);</p>"
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "app.listen = function(){\n  var server = http.createServer(this);\n  return server.listen.apply(server, arguments);\n};",
+    "ctx": {
+      "type": "method",
+      "receiver": "app",
+      "name": "listen",
+      "string": "app.listen()"
+    }
+  }
+]

@@ -1,0 +1,55 @@
+[
+  {
+    "tags": [],
+    "description": {
+      "full": "<p>Module dependencies.</p>",
+      "summary": "<p>Module dependencies.</p>",
+      "body": ""
+    },
+    "ignore": false,
+    "code": "var utils = require('./utils');",
+    "ctx": {
+      "type": "declaration",
+      "name": "utils",
+      "value": "require('./utils')",
+      "string": "utils"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "param",
+        "types": [
+          "Function"
+        ],
+        "name": "app",
+        "description": ""
+      },
+      {
+        "type": "return",
+        "types": [
+          "Function"
+        ],
+        "description": ""
+      },
+      {
+        "type": "api",
+        "visibility": "private"
+      }
+    ],
+    "description": {
+      "full": "<p>Initialization middleware, exposing the<br />request and response to eachother, as well<br />as defaulting the X-Powered-By header field.</p>",
+      "summary": "<p>Initialization middleware, exposing the<br />request and response to eachother, as well<br />as defaulting the X-Powered-By header field.</p>",
+      "body": ""
+    },
+    "isPrivate": true,
+    "ignore": false,
+    "code": "exports.init = function(app){\n  return function expressInit(req, res, next){\n    req.app = res.app = app;\n    res.setHeader('X-Powered-By', 'Express');\n    req.res = res;\n    res.req = req;\n    req.next = next;\n\n    req.__proto__ = app.request;\n    res.__proto__ = app.response;\n\n    res.locals = res.locals || utils.locals(res);\n\n    next();\n  }\n};",
+    "ctx": {
+      "type": "method",
+      "receiver": "exports",
+      "name": "init",
+      "string": "exports.init()"
+    }
+  }
+]

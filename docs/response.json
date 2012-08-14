@@ -1,0 +1,659 @@
+[
+  {
+    "tags": [],
+    "description": {
+      "full": "<p>Module dependencies.</p>",
+      "summary": "<p>Module dependencies.</p>",
+      "body": ""
+    },
+    "ignore": false,
+    "code": "var fs = require('fs')\n  , http = require('http')\n  , path = require('path')\n  , connect = require('connect')\n  , utils = connect.utils\n  , normalizeType = require('./utils').normalizeType\n  , normalizeTypes = require('./utils').normalizeTypes\n  , statusCodes = http.STATUS_CODES\n  , send = connect.static.send\n  , cookie = require('cookie')\n  , send = require('send')\n  , crc = require('crc')\n  , mime = connect.mime\n  , basename = path.basename\n  , extname = path.extname\n  , join = path.join;",
+    "ctx": {
+      "type": "declaration",
+      "name": "fs",
+      "value": "require('fs')",
+      "string": "fs"
+    }
+  },
+  {
+    "tags": [],
+    "description": {
+      "full": "<p>Response prototype.</p>",
+      "summary": "<p>Response prototype.</p>",
+      "body": ""
+    },
+    "ignore": false,
+    "code": "var res = module.exports = {\n  __proto__: http.ServerResponse.prototype\n};",
+    "ctx": {
+      "type": "declaration",
+      "name": "res",
+      "value": "module.exports = {",
+      "string": "res"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "param",
+        "types": [
+          "Number"
+        ],
+        "name": "code",
+        "description": ""
+      },
+      {
+        "type": "return",
+        "types": [
+          "ServerResponse"
+        ],
+        "description": ""
+      },
+      {
+        "type": "api",
+        "visibility": "public"
+      }
+    ],
+    "description": {
+      "full": "<p>Set status <code>code</code>.</p>",
+      "summary": "<p>Set status <code>code</code>.</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "res.status = function(code){\n  this.statusCode = code;\n  return this;\n};",
+    "ctx": {
+      "type": "method",
+      "receiver": "res",
+      "name": "status",
+      "string": "res.status()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "param",
+        "types": [
+          "Object"
+        ],
+        "name": "links",
+        "description": ""
+      },
+      {
+        "type": "return",
+        "types": [
+          "ServerResponse"
+        ],
+        "description": ""
+      },
+      {
+        "type": "api",
+        "visibility": "public"
+      }
+    ],
+    "description": {
+      "full": "<p>Set Link header field with the given <code>links</code>.</p>\n\n<h2>Examples</h2>\n\n<p>res.links({<br />     next: '<a href='http://api.example.com/users?page=2'>http://api.example.com/users?page=2</a>',<br />     last: '<a href='http://api.example.com/users?page=5'>http://api.example.com/users?page=5</a>'<br />   });</p>",
+      "summary": "<p>Set Link header field with the given <code>links</code>.</p>",
+      "body": "<h2>Examples</h2>\n\n<p>res.links({<br />     next: '<a href='http://api.example.com/users?page=2'>http://api.example.com/users?page=2</a>',<br />     last: '<a href='http://api.example.com/users?page=5'>http://api.example.com/users?page=5</a>'<br />   });</p>"
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "res.links = function(links){\n  return this.set('Link', Object.keys(links).map(function(rel){\n    return '<' + links[rel] + '>; rel=\"' + rel + '\"';\n  }).join(', '));\n};",
+    "ctx": {
+      "type": "method",
+      "receiver": "res",
+      "name": "links",
+      "string": "res.links()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "param",
+        "types": [
+          "Mixed"
+        ],
+        "name": "body",
+        "description": "or status"
+      },
+      {
+        "type": "param",
+        "types": [
+          "Mixed"
+        ],
+        "name": "body",
+        "description": ""
+      },
+      {
+        "type": "return",
+        "types": [
+          "ServerResponse"
+        ],
+        "description": ""
+      },
+      {
+        "type": "api",
+        "visibility": "public"
+      }
+    ],
+    "description": {
+      "full": "<p>Send a response.</p>\n\n<h2>Examples</h2>\n\n<pre><code>res.send(new Buffer('wahoo'));\nres.send({ some: 'json' });\nres.send('&lt;p&gt;some html&lt;/p&gt;');\nres.send(404, 'Sorry, cant find that');\nres.send(404);\n</code></pre>",
+      "summary": "<p>Send a response.</p>",
+      "body": "<h2>Examples</h2>\n\n<pre><code>res.send(new Buffer('wahoo'));\nres.send({ some: 'json' });\nres.send('&lt;p&gt;some html&lt;/p&gt;');\nres.send(404, 'Sorry, cant find that');\nres.send(404);\n</code></pre>"
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "res.send = function(body){\n  var req = this.req\n    , head = 'HEAD' == req.method\n    , len;\n\n  // allow status / body\n  if (2 == arguments.length) {\n    // res.send(body, status) backwards compat\n    if ('number' != typeof body && 'number' == typeof arguments[1]) {\n      this.statusCode = arguments[1];\n    } else {\n      this.statusCode = body;\n      body = arguments[1];\n    }\n  }\n\n  // convert string objects to primitives\n  if (body instanceof String) body = body.toString();\n\n  switch (typeof body) {\n    // response status\n    case 'number':\n      this.get('Content-Type') || this.type('txt');\n      this.statusCode = body;\n      body = http.STATUS_CODES[body];\n      break;\n    // string defaulting to html\n    case 'string':\n      if (!this.get('Content-Type')) {\n        this.charset = this.charset || 'utf-8';\n        this.type('html');\n      }\n      break;\n    case 'boolean':\n    case 'object':\n      if (null == body) {\n        body = '';\n      } else if (Buffer.isBuffer(body)) {\n        this.get('Content-Type') || this.type('bin');\n      } else {\n        return this.json(body);\n      }\n      break;\n  }\n\n  // populate Content-Length\n  if (undefined !== body && !this.get('Content-Length')) {\n    this.set('Content-Length', len = Buffer.isBuffer(body)\n      ? body.length\n      : Buffer.byteLength(body));\n  }\n\n  // ETag support\n  // TODO: W/ support\n  if (len > 1024) {\n    if (!this.get('ETag')) this.set('ETag', Buffer.isBuffer(body)\n      ? crc.buffer.crc32(body)\n      : crc.crc32(body));\n  }\n\n  // freshness\n  if (req.fresh) this.statusCode = 304;\n\n  // strip irrelevant headers\n  if (204 == this.statusCode || 304 == this.statusCode) {\n    this.removeHeader('Content-Type');\n    this.removeHeader('Content-Length');\n    body = '';\n  }\n\n  // respond\n  this.end(head ? null : body);\n  return this;\n};",
+    "ctx": {
+      "type": "method",
+      "receiver": "res",
+      "name": "send",
+      "string": "res.send()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "param",
+        "types": [
+          "Mixed"
+        ],
+        "name": "obj",
+        "description": "or status"
+      },
+      {
+        "type": "param",
+        "types": [
+          "Mixed"
+        ],
+        "name": "obj",
+        "description": ""
+      },
+      {
+        "type": "return",
+        "types": [
+          "ServerResponse"
+        ],
+        "description": ""
+      },
+      {
+        "type": "api",
+        "visibility": "public"
+      }
+    ],
+    "description": {
+      "full": "<p>Send JSON response.</p>\n\n<h2>Examples</h2>\n\n<pre><code>res.json(null);\nres.json({ user: 'tj' });\nres.json(500, 'oh noes!');\nres.json(404, 'I dont have that');\n</code></pre>",
+      "summary": "<p>Send JSON response.</p>",
+      "body": "<h2>Examples</h2>\n\n<pre><code>res.json(null);\nres.json({ user: 'tj' });\nres.json(500, 'oh noes!');\nres.json(404, 'I dont have that');\n</code></pre>"
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "res.json = function(obj){\n  // allow status / body\n  if (2 == arguments.length) {\n    // res.json(body, status) backwards compat\n    if ('number' == typeof arguments[1]) {\n      this.statusCode = arguments[1];\n    } else {\n      this.statusCode = obj;\n      obj = arguments[1];\n    }\n  }\n\n  // settings\n  var app = this.app\n    , jsonp = app.get('jsonp callback')\n    , replacer = app.get('json replacer')\n    , spaces = app.get('json spaces')\n    , body = JSON.stringify(obj, replacer, spaces)\n    , callback = this.req.query[app.get('jsonp callback name')];\n\n  // content-type\n  this.charset = this.charset || 'utf-8';\n  this.set('Content-Type', 'application/json');\n  \n  // jsonp\n  if (callback && jsonp) {\n    this.set('Content-Type', 'text/javascript');\n    body = callback.replace(/[^[]\\w$.]/g, '') + '(' + body + ');';\n  }\n\n  return this.send(body);\n};",
+    "ctx": {
+      "type": "method",
+      "receiver": "res",
+      "name": "json",
+      "string": "res.json()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "param",
+        "types": [
+          "String"
+        ],
+        "name": "path",
+        "description": ""
+      },
+      {
+        "type": "param",
+        "types": [
+          "Object",
+          "Function"
+        ],
+        "name": "options",
+        "description": "or fn"
+      },
+      {
+        "type": "param",
+        "types": [
+          "Function"
+        ],
+        "name": "fn",
+        "description": ""
+      },
+      {
+        "type": "api",
+        "visibility": "public"
+      }
+    ],
+    "description": {
+      "full": "<p>Transfer the file at the given <code>path</code>.</p>\n\n<p>Automatically sets the <em>Content-Type</em> response header field.<br />The callback <code>fn(err)</code> is invoked when the transfer is complete<br />or when an error occurs. Be sure to check <code>res.sentHeader</code><br />if you wish to attempt responding, as the header and some data<br />may have already been transferred.</p>\n\n<h2>Options</h2>\n\n<ul>\n<li><code>maxAge</code> defaulting to 0</li>\n<li><code>root</code>   root directory for relative filenames</li>\n</ul>\n\n<h2>Examples</h2>\n\n<p>The following example illustrates how <code>res.sendfile()</code> may<br /> be used as an alternative for the <code>static()</code> middleware for<br /> dynamic situations. The code backing <code>res.sendfile()</code> is actually<br /> the same code, so HTTP cache support etc is identical.</p>\n\n<pre><code>app.get('/user/:uid/photos/:file', function(req, res){\n  var uid = req.params.uid\n    , file = req.params.file;\n\n  req.user.mayViewFilesFrom(uid, function(yes){\n    if (yes) {\n      res.sendfile('/uploads/' + uid + '/' + file);\n    } else {\n      res.send(403, 'Sorry! you cant see that.');\n    }\n  });\n});\n</code></pre>",
+      "summary": "<p>Transfer the file at the given <code>path</code>.</p>",
+      "body": "<p>Automatically sets the <em>Content-Type</em> response header field.<br />The callback <code>fn(err)</code> is invoked when the transfer is complete<br />or when an error occurs. Be sure to check <code>res.sentHeader</code><br />if you wish to attempt responding, as the header and some data<br />may have already been transferred.</p>\n\n<h2>Options</h2>\n\n<ul>\n<li><code>maxAge</code> defaulting to 0</li>\n<li><code>root</code>   root directory for relative filenames</li>\n</ul>\n\n<h2>Examples</h2>\n\n<p>The following example illustrates how <code>res.sendfile()</code> may<br /> be used as an alternative for the <code>static()</code> middleware for<br /> dynamic situations. The code backing <code>res.sendfile()</code> is actually<br /> the same code, so HTTP cache support etc is identical.</p>\n\n<pre><code>app.get('/user/:uid/photos/:file', function(req, res){\n  var uid = req.params.uid\n    , file = req.params.file;\n\n  req.user.mayViewFilesFrom(uid, function(yes){\n    if (yes) {\n      res.sendfile('/uploads/' + uid + '/' + file);\n    } else {\n      res.send(403, 'Sorry! you cant see that.');\n    }\n  });\n});\n</code></pre>"
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "res.sendfile = function(path, options, fn){\n  var self = this\n    , req = self.req\n    , next = this.req.next\n    , options = options || {}\n    , done;\n\n  // support function as second arg\n  if ('function' == typeof options) {\n    fn = options;\n    options = {};\n  }\n\n  // socket errors\n  req.socket.on('error', error);\n\n  // errors\n  function error(err) {\n    if (done) return;\n    done = true;\n\n    // clean up\n    cleanup();\n    if (!self.headerSent) self.removeHeader('Content-Disposition');\n\n    // callback available\n    if (fn) return fn(err);\n\n    // list in limbo if there's no callback\n    if (self.headerSent) return;\n\n    // delegate\n    next(err);\n  }\n\n  // streaming\n  function stream() {\n    if (done) return;\n    cleanup();\n    if (fn) self.on('finish', fn);\n  }\n\n  // cleanup\n  function cleanup() {\n    req.socket.removeListener('error', error);\n  }\n\n  // transfer\n  var file = send(req, path);\n  if (options.root) file.root(options.root);\n  file.maxage(options.maxAge || 0);\n  file.on('error', error);\n  file.on('directory', next);\n  file.on('stream', stream);\n  file.pipe(this);\n  this.on('finish', cleanup);\n};",
+    "ctx": {
+      "type": "method",
+      "receiver": "res",
+      "name": "sendfile",
+      "string": "res.sendfile()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "param",
+        "types": [
+          "String"
+        ],
+        "name": "path",
+        "description": ""
+      },
+      {
+        "type": "param",
+        "types": [
+          "String",
+          "Function"
+        ],
+        "name": "filename",
+        "description": "or fn"
+      },
+      {
+        "type": "param",
+        "types": [
+          "Function"
+        ],
+        "name": "fn",
+        "description": ""
+      },
+      {
+        "type": "api",
+        "visibility": "public"
+      }
+    ],
+    "description": {
+      "full": "<p>Transfer the file at the given <code>path</code> as an attachment.</p>\n\n<p>Optionally providing an alternate attachment <code>filename</code>,<br />and optional callback <code>fn(err)</code>. The callback is invoked<br />when the data transfer is complete, or when an error has<br />ocurred. Be sure to check <code>res.headerSent</code> if you plan to respond.</p>\n\n<p>This method uses <code>res.sendfile()</code>.</p>",
+      "summary": "<p>Transfer the file at the given <code>path</code> as an attachment.</p>",
+      "body": "<p>Optionally providing an alternate attachment <code>filename</code>,<br />and optional callback <code>fn(err)</code>. The callback is invoked<br />when the data transfer is complete, or when an error has<br />ocurred. Be sure to check <code>res.headerSent</code> if you plan to respond.</p>\n\n<p>This method uses <code>res.sendfile()</code>.</p>"
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "res.download = function(path, filename, fn){\n  // support function as second arg\n  if ('function' == typeof filename) {\n    fn = filename;\n    filename = null;\n  }\n\n  filename = filename || path;\n  this.set('Content-Disposition', 'attachment; filename=\"' + basename(filename) + '\"');\n  return this.sendfile(path, fn);\n};",
+    "ctx": {
+      "type": "method",
+      "receiver": "res",
+      "name": "download",
+      "string": "res.download()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "param",
+        "types": [
+          "String"
+        ],
+        "name": "type",
+        "description": ""
+      },
+      {
+        "type": "return",
+        "types": [
+          "ServerResponse"
+        ],
+        "description": "for chaining"
+      },
+      {
+        "type": "api",
+        "visibility": "public"
+      }
+    ],
+    "description": {
+      "full": "<p>Set <em>Content-Type</em> response header with <code>type</code> through <code>mime.lookup()</code><br />when it does not contain \"/\", or set the Content-Type to <code>type</code> otherwise.</p>\n\n<h2>Examples</h2>\n\n<pre><code>res.type('.html');\nres.type('html');\nres.type('json');\nres.type('application/json');\nres.type('png');\n</code></pre>",
+      "summary": "<p>Set <em>Content-Type</em> response header with <code>type</code> through <code>mime.lookup()</code><br />when it does not contain \"/\", or set the Content-Type to <code>type</code> otherwise.</p>",
+      "body": "<h2>Examples</h2>\n\n<pre><code>res.type('.html');\nres.type('html');\nres.type('json');\nres.type('application/json');\nres.type('png');\n</code></pre>"
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "res.contentType =\nres.type = function(type){\n  return this.set('Content-Type', ~type.indexOf('/')\n    ? type\n    : mime.lookup(type));\n};"
+  },
+  {
+    "tags": [
+      {
+        "type": "param",
+        "types": [
+          "Object"
+        ],
+        "name": "obj",
+        "description": ""
+      },
+      {
+        "type": "return",
+        "types": [
+          "ServerResponse"
+        ],
+        "description": "for chaining"
+      },
+      {
+        "type": "api",
+        "visibility": "public"
+      }
+    ],
+    "description": {
+      "full": "<p>Respond to the Acceptable formats using an <code>obj</code><br />of mime-type callbacks.</p>\n\n<p>This method uses <code>req.accepted</code>, an array of<br />acceptable types ordered by their quality values.<br />When \"Accept\" is not present the <em>first</em> callback<br />is invoked, otherwise the first match is used. When<br />no match is performed the server responds with<br />406 \"Not Acceptable\".</p>\n\n<p>Content-Type is set for you, however if you choose<br />you may alter this within the callback using <code>res.type()</code><br />or <code>res.set('Content-Type', ...)</code>.</p>\n\n<p>res.format({<br />     'text/plain': function(){<br />       res.send('hey');<br />     },</p>\n\n<pre><code> 'text/html': function(){\n   res.send('&lt;p&gt;hey&lt;/p&gt;');\n },\n\n 'appliation/json': function(){\n   res.send({ message: 'hey' });\n }\n</code></pre>\n\n<p>});</p>\n\n<p>In addition to canonicalized MIME types you may<br />also use extnames mapped to these types:</p>\n\n<p>res.format({<br />     text: function(){<br />       res.send('hey');<br />     },</p>\n\n<pre><code> html: function(){\n   res.send('&lt;p&gt;hey&lt;/p&gt;');\n },\n\n json: function(){\n   res.send({ message: 'hey' });\n }\n</code></pre>\n\n<p>});</p>\n\n<p>By default Express passes an <code>Error</code><br />with a <code>.status</code> of 406 to <code>next(err)</code><br />if a match is not made. If you provide<br />a <code>.default</code> callback it will be invoked<br />instead.</p>",
+      "summary": "<p>Respond to the Acceptable formats using an <code>obj</code><br />of mime-type callbacks.</p>",
+      "body": "<p>This method uses <code>req.accepted</code>, an array of<br />acceptable types ordered by their quality values.<br />When \"Accept\" is not present the <em>first</em> callback<br />is invoked, otherwise the first match is used. When<br />no match is performed the server responds with<br />406 \"Not Acceptable\".</p>\n\n<p>Content-Type is set for you, however if you choose<br />you may alter this within the callback using <code>res.type()</code><br />or <code>res.set('Content-Type', ...)</code>.</p>\n\n<p>res.format({<br />     'text/plain': function(){<br />       res.send('hey');<br />     },</p>\n\n<pre><code> 'text/html': function(){\n   res.send('&lt;p&gt;hey&lt;/p&gt;');\n },\n\n 'appliation/json': function(){\n   res.send({ message: 'hey' });\n }\n</code></pre>\n\n<p>});</p>\n\n<p>In addition to canonicalized MIME types you may<br />also use extnames mapped to these types:</p>\n\n<p>res.format({<br />     text: function(){<br />       res.send('hey');<br />     },</p>\n\n<pre><code> html: function(){\n   res.send('&lt;p&gt;hey&lt;/p&gt;');\n },\n\n json: function(){\n   res.send({ message: 'hey' });\n }\n</code></pre>\n\n<p>});</p>\n\n<p>By default Express passes an <code>Error</code><br />with a <code>.status</code> of 406 to <code>next(err)</code><br />if a match is not made. If you provide<br />a <code>.default</code> callback it will be invoked<br />instead.</p>"
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "res.format = function(obj){\n  var keys = Object.keys(obj)\n    , req = this.req\n    , next = req.next;\n\n  var fn = obj.default;\n  if (fn) delete obj.default;\n\n  var key = req.accepts(keys);\n\n  this.set('Vary', 'Accept');\n\n  if (key) {\n    this.set('Content-Type', normalizeType(key));\n    obj[key](req, this, next);\n  } else if (fn) {\n    fn();\n  } else {\n    var err = new Error('Not Acceptable');\n    err.status = 406;\n    err.types = normalizeTypes(keys);\n    next(err);\n  }\n\n  return this;\n};",
+    "ctx": {
+      "type": "method",
+      "receiver": "res",
+      "name": "format",
+      "string": "res.format()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "param",
+        "types": [
+          "String"
+        ],
+        "name": "filename",
+        "description": ""
+      },
+      {
+        "type": "return",
+        "types": [
+          "ServerResponse"
+        ],
+        "description": ""
+      },
+      {
+        "type": "api",
+        "visibility": "public"
+      }
+    ],
+    "description": {
+      "full": "<p>Set <em>Content-Disposition</em> header to <em>attachment</em> with optional <code>filename</code>.</p>",
+      "summary": "<p>Set <em>Content-Disposition</em> header to <em>attachment</em> with optional <code>filename</code>.</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "res.attachment = function(filename){\n  if (filename) this.type(extname(filename));\n  this.set('Content-Disposition', filename\n    ? 'attachment; filename=\"' + basename(filename) + '\"'\n    : 'attachment');\n  return this;\n};",
+    "ctx": {
+      "type": "method",
+      "receiver": "res",
+      "name": "attachment",
+      "string": "res.attachment()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "param",
+        "types": [
+          "String",
+          "Object"
+        ],
+        "name": "field",
+        "description": ""
+      },
+      {
+        "type": "param",
+        "types": [
+          "String"
+        ],
+        "name": "val",
+        "description": ""
+      },
+      {
+        "type": "return",
+        "types": [
+          "ServerResponse"
+        ],
+        "description": "for chaining"
+      },
+      {
+        "type": "api",
+        "visibility": "public"
+      }
+    ],
+    "description": {
+      "full": "<p>Set header <code>field</code> to <code>val</code>, or pass<br />an object of header fields.</p>\n\n<h2>Examples</h2>\n\n<p>res.set('Accept', 'application/json');<br />   res.set({ Accept: 'text/plain', 'X-API-Key': 'tobi' });</p>\n\n<p>Aliased as <code>res.header()</code>. </p>",
+      "summary": "<p>Set header <code>field</code> to <code>val</code>, or pass<br />an object of header fields.</p>",
+      "body": "<h2>Examples</h2>\n\n<p>res.set('Accept', 'application/json');<br />   res.set({ Accept: 'text/plain', 'X-API-Key': 'tobi' });</p>\n\n<p>Aliased as <code>res.header()</code>. </p>"
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "res.set = \nres.header = function(field, val){\n  if (2 == arguments.length) {\n    this.setHeader(field, '' + val);\n  } else {\n    for (var key in field) {\n      this.setHeader(key, '' + field[key]);\n    }\n  }\n  return this;\n};",
+    "ctx": {
+      "type": "property",
+      "receiver": "res",
+      "name": "set",
+      "value": " ",
+      "string": "res.set"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "param",
+        "types": [
+          "String"
+        ],
+        "name": "field",
+        "description": ""
+      },
+      {
+        "type": "return",
+        "types": [
+          "String"
+        ],
+        "description": ""
+      },
+      {
+        "type": "api",
+        "visibility": "public"
+      }
+    ],
+    "description": {
+      "full": "<p>Get value for header <code>field</code>.</p>",
+      "summary": "<p>Get value for header <code>field</code>.</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "res.get = function(field){\n  return this.getHeader(field);\n};",
+    "ctx": {
+      "type": "method",
+      "receiver": "res",
+      "name": "get",
+      "string": "res.get()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "param",
+        "types": [
+          "String"
+        ],
+        "name": "name",
+        "description": ""
+      },
+      {
+        "type": "param",
+        "types": [
+          "Object"
+        ],
+        "name": "options",
+        "description": ""
+      },
+      {
+        "type": "param",
+        "types": [
+          "ServerResponse"
+        ],
+        "name": "for",
+        "description": "chaining"
+      },
+      {
+        "type": "api",
+        "visibility": "public"
+      }
+    ],
+    "description": {
+      "full": "<p>Clear cookie <code>name</code>.</p>",
+      "summary": "<p>Clear cookie <code>name</code>.</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "res.clearCookie = function(name, options){\n  var opts = { expires: new Date(1), path: '/' };\n  return this.cookie(name, '', options\n    ? utils.merge(opts, options)\n    : opts);\n};",
+    "ctx": {
+      "type": "method",
+      "receiver": "res",
+      "name": "clearCookie",
+      "string": "res.clearCookie()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "param",
+        "types": [
+          "String"
+        ],
+        "name": "name",
+        "description": ""
+      },
+      {
+        "type": "param",
+        "types": [
+          "String",
+          "Object"
+        ],
+        "name": "val",
+        "description": ""
+      },
+      {
+        "type": "param",
+        "types": [
+          "Options"
+        ],
+        "name": "options",
+        "description": ""
+      },
+      {
+        "type": "api",
+        "visibility": "public"
+      }
+    ],
+    "description": {
+      "full": "<p>Set cookie <code>name</code> to <code>val</code>, with the given <code>options</code>.</p>\n\n<h2>Options</h2>\n\n<ul>\n<li><code>maxAge</code>   max-age in milliseconds, converted to <code>expires</code></li>\n<li><code>signed</code>   sign the cookie</li>\n<li><code>path</code>     defaults to \"/\"</li>\n</ul>\n\n<h2>Examples</h2>\n\n<p>// \"Remember Me\" for 15 minutes<br />   res.cookie('rememberme', '1', { expires: new Date(Date.now() + 900000), httpOnly: true });</p>\n\n<p>// save as above<br />   res.cookie('rememberme', '1', { maxAge: 900000, httpOnly: true })</p>",
+      "summary": "<p>Set cookie <code>name</code> to <code>val</code>, with the given <code>options</code>.</p>",
+      "body": "<h2>Options</h2>\n\n<ul>\n<li><code>maxAge</code>   max-age in milliseconds, converted to <code>expires</code></li>\n<li><code>signed</code>   sign the cookie</li>\n<li><code>path</code>     defaults to \"/\"</li>\n</ul>\n\n<h2>Examples</h2>\n\n<p>// \"Remember Me\" for 15 minutes<br />   res.cookie('rememberme', '1', { expires: new Date(Date.now() + 900000), httpOnly: true });</p>\n\n<p>// save as above<br />   res.cookie('rememberme', '1', { maxAge: 900000, httpOnly: true })</p>"
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "res.cookie = function(name, val, options){\n  options = options || {};\n  var secret = this.req.secret;\n  var signed = options.signed;\n  if (signed && !secret) throw new Error('connect.cookieParser(\"secret\") required for signed cookies');\n  if ('object' == typeof val) val = 'j:' + JSON.stringify(val);\n  if (signed) val = utils.sign(val, secret);\n  if ('maxAge' in options) options.expires = new Date(Date.now() + options.maxAge);\n  if (null == options.path) options.path = '/';\n  this.set('Set-Cookie', cookie.serialize(name, String(val), options));\n  return this;\n};",
+    "ctx": {
+      "type": "method",
+      "receiver": "res",
+      "name": "cookie",
+      "string": "res.cookie()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "param",
+        "types": [
+          "String"
+        ],
+        "name": "url",
+        "description": ""
+      },
+      {
+        "type": "param",
+        "types": [
+          "Number"
+        ],
+        "name": "code",
+        "description": ""
+      },
+      {
+        "type": "api",
+        "visibility": "public"
+      }
+    ],
+    "description": {
+      "full": "<p>Redirect to the given <code>url</code> with optional response <code>status</code><br />defaulting to 302.</p>\n\n<p>The given <code>url</code> can also be the name of a mapped url, for<br />example by default express supports \"back\" which redirects<br />to the <em>Referrer</em> or <em>Referer</em> headers or \"/\".</p>\n\n<h2>Examples</h2>\n\n<p>res.redirect('/foo/bar');<br />   res.redirect('<a href='http://example.com'>http://example.com</a>');<br />   res.redirect(301, '<a href='http://example.com'>http://example.com</a>');<br />   res.redirect('../login'); // /blog/post/1 -> /blog/login</p>\n\n<h2>Mounting</h2>\n\n<p>When an application is mounted, and <code>res.redirect()</code><br />  is given a path that does <em>not</em> lead with \"/\". For <br />  example suppose a \"blog\" app is mounted at \"/blog\",<br />  the following redirect would result in \"/blog/login\":</p>\n\n<pre><code> res.redirect('login');\n</code></pre>\n\n<p>While the leading slash would result in a redirect to \"/login\":</p>\n\n<pre><code> res.redirect('/login');\n</code></pre>",
+      "summary": "<p>Redirect to the given <code>url</code> with optional response <code>status</code><br />defaulting to 302.</p>",
+      "body": "<p>The given <code>url</code> can also be the name of a mapped url, for<br />example by default express supports \"back\" which redirects<br />to the <em>Referrer</em> or <em>Referer</em> headers or \"/\".</p>\n\n<h2>Examples</h2>\n\n<p>res.redirect('/foo/bar');<br />   res.redirect('<a href='http://example.com'>http://example.com</a>');<br />   res.redirect(301, '<a href='http://example.com'>http://example.com</a>');<br />   res.redirect('../login'); // /blog/post/1 -> /blog/login</p>\n\n<h2>Mounting</h2>\n\n<p>When an application is mounted, and <code>res.redirect()</code><br />  is given a path that does <em>not</em> lead with \"/\". For <br />  example suppose a \"blog\" app is mounted at \"/blog\",<br />  the following redirect would result in \"/blog/login\":</p>\n\n<pre><code> res.redirect('login');\n</code></pre>\n\n<p>While the leading slash would result in a redirect to \"/login\":</p>\n\n<pre><code> res.redirect('/login');\n</code></pre>"
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "res.redirect = function(url){\n  var app = this.app\n    , req = this.req\n    , head = 'HEAD' == req.method\n    , status = 302\n    , body;\n\n  // allow status / url\n  if (2 == arguments.length) {\n    status = url;\n    url = arguments[1];\n  }\n\n  // setup redirect map\n  var map = { back: req.get('Referrer') || '/' };\n\n  // perform redirect\n  url = map[url] || url;\n\n  // relative\n  if (!~url.indexOf('://') && 0 != url.indexOf('//')) {\n    var path = app.path();\n\n    // relative to path\n    if ('.' == url[0]) {\n      url = req.path + '/' + url;\n    // relative to mount-point\n    } else if ('/' != url[0]) {\n      url = path + '/' + url;\n    }\n\n    // Absolute\n    var host = req.get('Host');\n    url = '//' + host + url;\n  }\n\n  // Support text/{plain,html} by default\n  this.format({\n    text: function(){\n      body = statusCodes[status] + '. Redirecting to ' + url;\n    },\n\n    html: function(){\n      var u = utils.escape(url);\n      body = '<p>' + statusCodes[status] + '. Redirecting to <a href=\"' + u + '\">' + u + '</a></p>';\n    },\n\n    default: function(){\n      body = '';\n    }\n  });\n\n  // Respond\n  this.statusCode = status;\n  this.set('Location', url);\n  this.set('Content-Length', Buffer.byteLength(body));\n  this.end(head ? null : body);\n};",
+    "ctx": {
+      "type": "method",
+      "receiver": "res",
+      "name": "redirect",
+      "string": "res.redirect()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "param",
+        "types": [
+          "String"
+        ],
+        "name": "view",
+        "description": ""
+      },
+      {
+        "type": "param",
+        "types": [
+          "Object",
+          "Function"
+        ],
+        "name": "options",
+        "description": "or callback function"
+      },
+      {
+        "type": "param",
+        "types": [
+          "Function"
+        ],
+        "name": "fn",
+        "description": ""
+      },
+      {
+        "type": "api",
+        "visibility": "public"
+      }
+    ],
+    "description": {
+      "full": "<p>Render <code>view</code> with the given <code>options</code> and optional callback <code>fn</code>.<br />When a callback function is given a response will <em>not</em> be made<br />automatically, otherwise a response of <em>200</em> and <em>text/html</em> is given.</p>\n\n<h2>Options</h2>\n\n<ul>\n<li><code>cache</code>     boolean hinting to the engine it should cache</li>\n<li><code>filename</code>  filename of the view being rendered</li>\n</ul>",
+      "summary": "<p>Render <code>view</code> with the given <code>options</code> and optional callback <code>fn</code>.<br />When a callback function is given a response will <em>not</em> be made<br />automatically, otherwise a response of <em>200</em> and <em>text/html</em> is given.</p>",
+      "body": "<h2>Options</h2>\n\n<ul>\n<li><code>cache</code>     boolean hinting to the engine it should cache</li>\n<li><code>filename</code>  filename of the view being rendered</li>\n</ul>"
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "res.render = function(view, options, fn){\n  var self = this\n    , options = options || {}\n    , req = this.req\n    , app = req.app;\n\n  // support callback function as second arg\n  if ('function' == typeof options) {\n    fn = options, options = {};\n  }\n\n  // merge res.locals\n  options.locals = self.locals;\n\n  // default callback to respond\n  fn = fn || function(err, str){\n    if (err) return req.next(err);\n    self.send(str);\n  };\n\n  // render\n  app.render(view, options, fn);\n};",
+    "ctx": {
+      "type": "method",
+      "receiver": "res",
+      "name": "render",
+      "string": "res.render()"
+    }
+  }
+]

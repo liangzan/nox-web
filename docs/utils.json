@@ -1,0 +1,560 @@
+[
+  {
+    "tags": [],
+    "description": {
+      "full": "<p>Module dependencies.</p>",
+      "summary": "<p>Module dependencies.</p>",
+      "body": ""
+    },
+    "ignore": false,
+    "code": "var mime = require('connect').mime;",
+    "ctx": {
+      "type": "declaration",
+      "name": "mime",
+      "value": "require('connect').mime",
+      "string": "mime"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "param",
+        "types": [
+          "Object"
+        ],
+        "name": "obj",
+        "description": ""
+      },
+      {
+        "type": "return",
+        "types": [
+          "Function"
+        ],
+        "description": ""
+      },
+      {
+        "type": "api",
+        "visibility": "private"
+      }
+    ],
+    "description": {
+      "full": "<p>Make <code>locals()</code> bound to the given <code>obj</code>.</p>\n\n<p>This is used for <code>app.locals</code> and <code>res.locals</code>. </p>",
+      "summary": "<p>Make <code>locals()</code> bound to the given <code>obj</code>.</p>\n\n<p>This is used for <code>app.locals</code> and <code>res.locals</code>. </p>",
+      "body": ""
+    },
+    "isPrivate": true,
+    "ignore": false,
+    "code": "exports.locals = function(obj){\n  obj.viewCallbacks = obj.viewCallbacks || [];\n\n  function locals(obj){\n    for (var key in obj) locals[key] = obj[key];\n    return obj;\n  };\n\n  return locals;\n};",
+    "ctx": {
+      "type": "method",
+      "receiver": "exports",
+      "name": "locals",
+      "string": "exports.locals()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "param",
+        "types": [
+          "String"
+        ],
+        "name": "path",
+        "description": ""
+      },
+      {
+        "type": "return",
+        "types": [
+          "Boolean"
+        ],
+        "description": ""
+      },
+      {
+        "type": "api",
+        "visibility": "private"
+      }
+    ],
+    "description": {
+      "full": "<p>Check if <code>path</code> looks absolute.</p>",
+      "summary": "<p>Check if <code>path</code> looks absolute.</p>",
+      "body": ""
+    },
+    "isPrivate": true,
+    "ignore": false,
+    "code": "exports.isAbsolute = function(path){\n  if ('/' == path[0]) return true;\n  if (':' == path[1] && '\\\\' == path[2]) return true;\n};",
+    "ctx": {
+      "type": "method",
+      "receiver": "exports",
+      "name": "isAbsolute",
+      "string": "exports.isAbsolute()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "param",
+        "types": [
+          "Array"
+        ],
+        "name": "arr",
+        "description": ""
+      },
+      {
+        "type": "return",
+        "types": [
+          "Array"
+        ],
+        "description": ""
+      },
+      {
+        "type": "api",
+        "visibility": "private"
+      }
+    ],
+    "description": {
+      "full": "<p>Flatten the given <code>arr</code>.</p>",
+      "summary": "<p>Flatten the given <code>arr</code>.</p>",
+      "body": ""
+    },
+    "isPrivate": true,
+    "ignore": false,
+    "code": "exports.flatten = function(arr, ret){\n  var ret = ret || []\n    , len = arr.length;\n  for (var i = 0; i < len; ++i) {\n    if (Array.isArray(arr[i])) {\n      exports.flatten(arr[i], ret);\n    } else {\n      ret.push(arr[i]);\n    }\n  }\n  return ret;\n};",
+    "ctx": {
+      "type": "method",
+      "receiver": "exports",
+      "name": "flatten",
+      "string": "exports.flatten()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "param",
+        "types": [
+          "String"
+        ],
+        "name": "type",
+        "description": ""
+      },
+      {
+        "type": "return",
+        "types": [
+          "String"
+        ],
+        "description": ""
+      },
+      {
+        "type": "api",
+        "visibility": "private"
+      }
+    ],
+    "description": {
+      "full": "<p>Normalize the given <code>type</code>, for example \"html\" becomes \"text/html\".</p>",
+      "summary": "<p>Normalize the given <code>type</code>, for example \"html\" becomes \"text/html\".</p>",
+      "body": ""
+    },
+    "isPrivate": true,
+    "ignore": false,
+    "code": "exports.normalizeType = function(type){\n  return ~type.indexOf('/') ? type : mime.lookup(type);\n};",
+    "ctx": {
+      "type": "method",
+      "receiver": "exports",
+      "name": "normalizeType",
+      "string": "exports.normalizeType()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "param",
+        "types": [
+          "Array"
+        ],
+        "name": "types",
+        "description": ""
+      },
+      {
+        "type": "return",
+        "types": [
+          "Array"
+        ],
+        "description": ""
+      },
+      {
+        "type": "api",
+        "visibility": "private"
+      }
+    ],
+    "description": {
+      "full": "<p>Normalize <code>types</code>, for example \"html\" becomes \"text/html\".</p>",
+      "summary": "<p>Normalize <code>types</code>, for example \"html\" becomes \"text/html\".</p>",
+      "body": ""
+    },
+    "isPrivate": true,
+    "ignore": false,
+    "code": "exports.normalizeTypes = function(types){\n  var ret = [];\n\n  for (var i = 0; i < types.length; ++i) {\n    ret.push(~types[i].indexOf('/')\n      ? types[i]\n      : mime.lookup(types[i]));\n  }\n\n  return ret;\n};",
+    "ctx": {
+      "type": "method",
+      "receiver": "exports",
+      "name": "normalizeTypes",
+      "string": "exports.normalizeTypes()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "param",
+        "types": [
+          "Array"
+        ],
+        "name": "types",
+        "description": ""
+      },
+      {
+        "type": "param",
+        "types": [
+          "String"
+        ],
+        "name": "str",
+        "description": ""
+      },
+      {
+        "type": "return",
+        "types": [
+          "String"
+        ],
+        "description": ""
+      },
+      {
+        "type": "api",
+        "visibility": "private"
+      }
+    ],
+    "description": {
+      "full": "<p>Return the acceptable type in <code>types</code>, if any.</p>",
+      "summary": "<p>Return the acceptable type in <code>types</code>, if any.</p>",
+      "body": ""
+    },
+    "isPrivate": true,
+    "ignore": false,
+    "code": "exports.acceptsArray = function(types, str){\n  // accept anything when Accept is not present\n  if (!str) return types[0];\n\n  // parse\n  var accepted = exports.parseAccept(str)\n    , normalized = exports.normalizeTypes(types)\n    , len = accepted.length;\n\n  for (var i = 0; i < len; ++i) {\n    for (var j = 0, jlen = types.length; j < jlen; ++j) {\n      if (exports.accept(normalized[j].split('/'), accepted[i])) {\n        return types[j];\n      }\n    }\n  }\n};",
+    "ctx": {
+      "type": "method",
+      "receiver": "exports",
+      "name": "acceptsArray",
+      "string": "exports.acceptsArray()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "param",
+        "types": [
+          "String",
+          "Array"
+        ],
+        "name": "type(s)",
+        "description": ""
+      },
+      {
+        "type": "param",
+        "types": [
+          "String"
+        ],
+        "name": "str",
+        "description": ""
+      },
+      {
+        "type": "return",
+        "types": [
+          "Boolean",
+          "String"
+        ],
+        "description": ""
+      },
+      {
+        "type": "api",
+        "visibility": "private"
+      }
+    ],
+    "description": {
+      "full": "<p>Check if <code>type(s)</code> are acceptable based on<br />the given <code>str</code>.</p>",
+      "summary": "<p>Check if <code>type(s)</code> are acceptable based on<br />the given <code>str</code>.</p>",
+      "body": ""
+    },
+    "isPrivate": true,
+    "ignore": false,
+    "code": "exports.accepts = function(type, str){\n  if ('string' == typeof type) type = type.split(/ *, */);\n  return exports.acceptsArray(type, str);\n};",
+    "ctx": {
+      "type": "method",
+      "receiver": "exports",
+      "name": "accepts",
+      "string": "exports.accepts()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "param",
+        "types": [
+          "Array"
+        ],
+        "name": "type",
+        "description": ""
+      },
+      {
+        "type": "param",
+        "types": [
+          "Object"
+        ],
+        "name": "other",
+        "description": ""
+      },
+      {
+        "type": "return",
+        "types": [
+          "Boolean"
+        ],
+        "description": ""
+      },
+      {
+        "type": "api",
+        "visibility": "private"
+      }
+    ],
+    "description": {
+      "full": "<p>Check if <code>type</code> array is acceptable for <code>other</code>.</p>",
+      "summary": "<p>Check if <code>type</code> array is acceptable for <code>other</code>.</p>",
+      "body": ""
+    },
+    "isPrivate": true,
+    "ignore": false,
+    "code": "exports.accept = function(type, other){\n  return (type[0] == other.type || '*' == other.type)\n    && (type[1] == other.subtype || '*' == other.subtype);\n};",
+    "ctx": {
+      "type": "method",
+      "receiver": "exports",
+      "name": "accept",
+      "string": "exports.accept()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "param",
+        "types": [
+          "Type"
+        ],
+        "name": "name",
+        "description": ""
+      },
+      {
+        "type": "return",
+        "types": [
+          "Type"
+        ],
+        "description": ""
+      },
+      {
+        "type": "api",
+        "visibility": "private"
+      }
+    ],
+    "description": {
+      "full": "<p>Parse accept <code>str</code>, returning<br />an array objects containing<br /><code>.type</code> and <code>.subtype</code> along<br />with the values provided by<br /><code>parseQuality()</code>.</p>",
+      "summary": "<p>Parse accept <code>str</code>, returning<br />an array objects containing<br /><code>.type</code> and <code>.subtype</code> along<br />with the values provided by<br /><code>parseQuality()</code>.</p>",
+      "body": ""
+    },
+    "isPrivate": true,
+    "ignore": false,
+    "code": "exports.parseAccept = function(str){\n  return exports\n    .parseQuality(str)\n    .map(function(obj){\n      var parts = obj.value.split('/');\n      obj.type = parts[0];\n      obj.subtype = parts[1];\n      return obj;\n    });\n};",
+    "ctx": {
+      "type": "method",
+      "receiver": "exports",
+      "name": "parseAccept",
+      "string": "exports.parseAccept()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "param",
+        "types": [
+          "Type"
+        ],
+        "name": "name",
+        "description": ""
+      },
+      {
+        "type": "return",
+        "types": [
+          "Type"
+        ],
+        "description": ""
+      },
+      {
+        "type": "api",
+        "visibility": "private"
+      }
+    ],
+    "description": {
+      "full": "<p>Parse quality <code>str</code>, returning an<br />array of objects with <code>.value</code> and<br /><code>.quality</code>.</p>",
+      "summary": "<p>Parse quality <code>str</code>, returning an<br />array of objects with <code>.value</code> and<br /><code>.quality</code>.</p>",
+      "body": ""
+    },
+    "isPrivate": true,
+    "ignore": false,
+    "code": "exports.parseQuality = function(str){\n  return str\n    .split(/ *, */)\n    .map(quality)\n    .filter(function(obj){\n      return obj.quality;\n    })\n    .sort(function(a, b){\n      return b.quality - a.quality;\n    });\n};",
+    "ctx": {
+      "type": "method",
+      "receiver": "exports",
+      "name": "parseQuality",
+      "string": "exports.parseQuality()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "param",
+        "types": [
+          "String"
+        ],
+        "name": "str",
+        "description": ""
+      },
+      {
+        "type": "return",
+        "types": [
+          "Object"
+        ],
+        "description": ""
+      },
+      {
+        "type": "api",
+        "visibility": "private"
+      }
+    ],
+    "description": {
+      "full": "<p>Parse quality <code>str</code> returning an<br />object with <code>.value</code> and <code>.quality</code>.</p>",
+      "summary": "<p>Parse quality <code>str</code> returning an<br />object with <code>.value</code> and <code>.quality</code>.</p>",
+      "body": ""
+    },
+    "isPrivate": true,
+    "ignore": false,
+    "code": "function quality(str) {\n  var parts = str.split(/ *; */)\n    , val = parts[0];\n\n  var q = parts[1]\n    ? parseFloat(parts[1].split(/ *= */)[1])\n    : 1;\n\n  return { value: val, quality: q };\n}",
+    "ctx": {
+      "type": "function",
+      "name": "quality",
+      "string": "quality()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "param",
+        "types": [
+          "String"
+        ],
+        "name": "html",
+        "description": ""
+      },
+      {
+        "type": "return",
+        "types": [
+          "String"
+        ],
+        "description": ""
+      },
+      {
+        "type": "api",
+        "visibility": "private"
+      }
+    ],
+    "description": {
+      "full": "<p>Escape special characters in the given string of html.</p>",
+      "summary": "<p>Escape special characters in the given string of html.</p>",
+      "body": ""
+    },
+    "isPrivate": true,
+    "ignore": false,
+    "code": "exports.escape = function(html) {\n  return String(html)\n    .replace(/&/g, '&amp;')\n    .replace(/\"/g, '&quot;')\n    .replace(/</g, '&lt;')\n    .replace(/>/g, '&gt;');\n};",
+    "ctx": {
+      "type": "method",
+      "receiver": "exports",
+      "name": "escape",
+      "string": "exports.escape()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "param",
+        "types": [
+          "String",
+          "RegExp",
+          "Array"
+        ],
+        "name": "path",
+        "description": ""
+      },
+      {
+        "type": "param",
+        "types": [
+          "Array"
+        ],
+        "name": "keys",
+        "description": ""
+      },
+      {
+        "type": "param",
+        "types": [
+          "Boolean"
+        ],
+        "name": "sensitive",
+        "description": ""
+      },
+      {
+        "type": "param",
+        "types": [
+          "Boolean"
+        ],
+        "name": "strict",
+        "description": ""
+      },
+      {
+        "type": "return",
+        "types": [
+          "RegExp"
+        ],
+        "description": ""
+      },
+      {
+        "type": "api",
+        "visibility": "private"
+      }
+    ],
+    "description": {
+      "full": "<p>Normalize the given path string,<br />returning a regular expression.</p>\n\n<p>An empty array should be passed,<br />which will contain the placeholder<br />key names. For example \"/user/:id\" will<br />then contain [\"id\"].</p>",
+      "summary": "<p>Normalize the given path string,<br />returning a regular expression.</p>",
+      "body": "<p>An empty array should be passed,<br />which will contain the placeholder<br />key names. For example \"/user/:id\" will<br />then contain [\"id\"].</p>"
+    },
+    "isPrivate": true,
+    "ignore": false,
+    "code": "exports.pathRegexp = function(path, keys, sensitive, strict) {\n  if (path instanceof RegExp) return path;\n  if (Array.isArray(path)) path = '(' + path.join('|') + ')';\n  path = path\n    .concat(strict ? '' : '/?')\n    .replace(/\\/\\(/g, '(?:/')\n    .replace(/(\\/)?(\\.)?:(\\w+)(?:(\\(.*?\\)))?(\\?)?(\\*)?/g, function(_, slash, format, key, capture, optional, star){\n      keys.push({ name: key, optional: !! optional });\n      slash = slash || '';\n      return ''\n        + (optional ? '' : slash)\n        + '(?:'\n        + (optional ? slash : '')\n        + (format || '') + (capture || (format && '([^/.]+?)' || '([^/]+?)')) + ')'\n        + (optional || '')\n        + (star ? '(",
+    "ctx": {
+      "type": "method",
+      "receiver": "exports",
+      "name": "pathRegexp",
+      "string": "exports.pathRegexp()"
+    }
+  },
+  {
+    "tags": [],
+    "description": {
+      "full": "<p>?' : '');<br />    })<br />    .replace(/([\\/.])/g, '\\$1')<br />    .replace(/\\</p>",
+      "summary": "<p>?' : '');<br />    })<br />    .replace(/([\\/.])/g, '\\$1')<br />    .replace(/\\</p>",
+      "body": ""
+    },
+    "ignore": false,
+    "code": ", '(.*)');\n  return new RegExp('^' + path + '$', sensitive ? '' : 'i');\n}"
+  }
+]

@@ -1,0 +1,125 @@
+[
+  {
+    "tags": [],
+    "description": {
+      "full": "<p>Module dependencies.</p>",
+      "summary": "<p>Module dependencies.</p>",
+      "body": ""
+    },
+    "ignore": false,
+    "code": "var utils = require('../utils');",
+    "ctx": {
+      "type": "declaration",
+      "name": "utils",
+      "value": "require('../utils')",
+      "string": "utils"
+    }
+  },
+  {
+    "tags": [],
+    "description": {
+      "full": "<p>Expose <code>Route</code>.</p>",
+      "summary": "<p>Expose <code>Route</code>.</p>",
+      "body": ""
+    },
+    "ignore": false,
+    "code": "module.exports = Route;",
+    "ctx": {
+      "type": "property",
+      "receiver": "module",
+      "name": "exports",
+      "value": "Route",
+      "string": "module.exports"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "param",
+        "types": [
+          "String"
+        ],
+        "name": "method",
+        "description": ""
+      },
+      {
+        "type": "param",
+        "types": [
+          "String"
+        ],
+        "name": "path",
+        "description": ""
+      },
+      {
+        "type": "param",
+        "types": [
+          "Array"
+        ],
+        "name": "callbacks",
+        "description": ""
+      },
+      {
+        "type": "param",
+        "types": [
+          "Object"
+        ],
+        "name": "options.",
+        "description": ""
+      },
+      {
+        "type": "api",
+        "visibility": "private"
+      }
+    ],
+    "description": {
+      "full": "<p>Initialize <code>Route</code> with the given HTTP <code>method</code>, <code>path</code>,<br />and an array of <code>callbacks</code> and <code>options</code>.</p>\n\n<h2>Options</h2>\n\n<ul>\n<li><code>sensitive</code>    enable case-sensitive routes</li>\n<li><code>strict</code>       enable strict matching for trailing slashes</li>\n</ul>",
+      "summary": "<p>Initialize <code>Route</code> with the given HTTP <code>method</code>, <code>path</code>,<br />and an array of <code>callbacks</code> and <code>options</code>.</p>",
+      "body": "<h2>Options</h2>\n\n<ul>\n<li><code>sensitive</code>    enable case-sensitive routes</li>\n<li><code>strict</code>       enable strict matching for trailing slashes</li>\n</ul>"
+    },
+    "isPrivate": true,
+    "ignore": false,
+    "code": "function Route(method, path, callbacks, options) {\n  options = options || {};\n  this.path = path;\n  this.method = method;\n  this.callbacks = callbacks;\n  this.regexp = utils.pathRegexp(path\n    , this.keys = []\n    , options.sensitive\n    , options.strict);\n}",
+    "ctx": {
+      "type": "function",
+      "name": "Route",
+      "string": "Route()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "param",
+        "types": [
+          "String"
+        ],
+        "name": "path",
+        "description": ""
+      },
+      {
+        "type": "return",
+        "types": [
+          "Boolean"
+        ],
+        "description": ""
+      },
+      {
+        "type": "api",
+        "visibility": "private"
+      }
+    ],
+    "description": {
+      "full": "<p>Check if this route matches <code>path</code>, if so<br />populate <code>.params</code>.</p>",
+      "summary": "<p>Check if this route matches <code>path</code>, if so<br />populate <code>.params</code>.</p>",
+      "body": ""
+    },
+    "isPrivate": true,
+    "ignore": false,
+    "code": "Route.prototype.match = function(path){\n  var keys = this.keys\n    , params = this.params = []\n    , m = this.regexp.exec(path);\n\n  if (!m) return false;\n\n  for (var i = 1, len = m.length; i < len; ++i) {\n    var key = keys[i - 1];\n\n    var val = 'string' == typeof m[i]\n      ? decodeURIComponent(m[i])\n      : m[i];\n\n    if (key) {\n      params[key.name] = val;\n    } else {\n      params.push(val);\n    }\n  }\n\n  return true;\n};",
+    "ctx": {
+      "type": "method",
+      "constructor": "Route",
+      "name": "match",
+      "string": "Route.prototype.match()"
+    }
+  }
+]

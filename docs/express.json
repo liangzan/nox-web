@@ -1,0 +1,150 @@
+[
+  {
+    "tags": [],
+    "description": {
+      "full": "<p>Module dependencies.</p>",
+      "summary": "<p>Module dependencies.</p>",
+      "body": ""
+    },
+    "ignore": false,
+    "code": "var http = require('http')\n  , connect = require('connect')\n  , proto = require('./application')\n  , Route = require('./router/route')\n  , Router = require('./router')\n  , req = require('./request')\n  , res = require('./response')\n  , send = require('send')\n  , utils = connect.utils;",
+    "ctx": {
+      "type": "declaration",
+      "name": "http",
+      "value": "require('http')",
+      "string": "http"
+    }
+  },
+  {
+    "tags": [],
+    "description": {
+      "full": "<p>Expose <code>createApplication()</code>.</p>",
+      "summary": "<p>Expose <code>createApplication()</code>.</p>",
+      "body": ""
+    },
+    "ignore": false,
+    "code": "exports = module.exports = createApplication;"
+  },
+  {
+    "tags": [],
+    "description": {
+      "full": "<p>Framework version.</p>",
+      "summary": "<p>Framework version.</p>",
+      "body": ""
+    },
+    "ignore": false,
+    "code": "exports.version = '3.0.0rc2';",
+    "ctx": {
+      "type": "property",
+      "receiver": "exports",
+      "name": "version",
+      "value": "'3.0.0rc2'",
+      "string": "exports.version"
+    }
+  },
+  {
+    "tags": [],
+    "description": {
+      "full": "<p>Expose mime.</p>",
+      "summary": "<p>Expose mime.</p>",
+      "body": ""
+    },
+    "ignore": false,
+    "code": "exports.mime = send.mime;",
+    "ctx": {
+      "type": "property",
+      "receiver": "exports",
+      "name": "mime",
+      "value": "send.mime",
+      "string": "exports.mime"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "return",
+        "types": [
+          "Function"
+        ],
+        "description": ""
+      },
+      {
+        "type": "api",
+        "visibility": "public"
+      }
+    ],
+    "description": {
+      "full": "<p>Create an express application.</p>",
+      "summary": "<p>Create an express application.</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "function createApplication() {\n  var app = connect();\n  utils.merge(app, proto);\n  app.request = { __proto__: req };\n  app.response = { __proto__: res };\n  app.init();\n  return app;\n}",
+    "ctx": {
+      "type": "function",
+      "name": "createApplication",
+      "string": "createApplication()"
+    }
+  },
+  {
+    "tags": [],
+    "description": {
+      "full": "<p>Expose connect.middleware as express.*<br />for example <code>express.logger</code> etc.</p>",
+      "summary": "<p>Expose connect.middleware as express.*<br />for example <code>express.logger</code> etc.</p>",
+      "body": ""
+    },
+    "ignore": false,
+    "code": "for (var key in connect.middleware) {\n  Object.defineProperty(\n      exports\n    , key\n    , Object.getOwnPropertyDescriptor(connect.middleware, key));\n}"
+  },
+  {
+    "tags": [],
+    "description": {
+      "full": "<p>Error on createServer().</p>",
+      "summary": "<p>Error on createServer().</p>",
+      "body": ""
+    },
+    "ignore": false,
+    "code": "exports.createServer = function(){\n  console.warn('Warning: express.createServer() is deprecated, express');\n  console.warn('applications no longer inherit from http.Server,');\n  console.warn('please use:');\n  console.warn('');\n  console.warn('  var express = require(\"express\");');\n  console.warn('  var app = express();');\n  console.warn('');\n  return createApplication();\n};",
+    "ctx": {
+      "type": "method",
+      "receiver": "exports",
+      "name": "createServer",
+      "string": "exports.createServer()"
+    }
+  },
+  {
+    "tags": [],
+    "description": {
+      "full": "<p>Expose the prototypes.</p>",
+      "summary": "<p>Expose the prototypes.</p>",
+      "body": ""
+    },
+    "ignore": false,
+    "code": "exports.application = proto;\nexports.request = req;\nexports.response = res;",
+    "ctx": {
+      "type": "property",
+      "receiver": "exports",
+      "name": "application",
+      "value": "proto",
+      "string": "exports.application"
+    }
+  },
+  {
+    "tags": [],
+    "description": {
+      "full": "<p>Expose constructors.</p>",
+      "summary": "<p>Expose constructors.</p>",
+      "body": ""
+    },
+    "ignore": false,
+    "code": "exports.Route = Route;\nexports.Router = Router;\n\n// Error handler title\n\nexports.errorHandler.title = 'Express';",
+    "ctx": {
+      "type": "property",
+      "receiver": "exports",
+      "name": "Route",
+      "value": "Route",
+      "string": "exports.Route"
+    }
+  }
+]
