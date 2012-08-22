@@ -3,23 +3,46 @@ window.log = function f(){ log.history = log.history || []; log.history.push(arg
 (function(){try{console.log();return window.console;}catch(a){return (window.console={});}}());
 
 
+var utils = {
 
-$.fn.codemirror = function () {
+  elem: function (elem, text) {
+    var _elem = document.createElement( elem );
 
-  this.each(function (idx, elem) {
-    var code = document.createElement('div');
+    if (text) {
+      _elem.appendChild( utils.text( text ) );
+    }
 
-    $( elem )
-      .before( code )
-      .addClass( 'hidden' );
+    return _elem;
+  },
 
-    CodeMirror( code, {
-      value: elem.innerHTML,
-      mode: 'javascript',
-      lineNumbers: true,
-      readOnly: true
-    });
-  });
+  text: function (text) {
+    return document.createTextNode( text );
+  },
 
-  return this;
+  append: function (from, to) {
+    from.appendChild( to );
+
+    return from;
+  },
+
+  toList: function (nodes) {
+    return Array.prototype.slice.call( nodes );
+  },
+
+  /**
+   * Highlight the given `js`.
+   */
+
+  highlight: function (js) {
+    return js
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/\/\/(.*)/gm, '<span class="comment">//$1</span>')
+      .replace(/('.*?')/gm, '<span class="string">$1</span>')
+      .replace(/(\d+\.\d+)/gm, '<span class="number">$1</span>')
+      .replace(/(\d+)/gm, '<span class="number">$1</span>')
+      .replace(/\bnew *(\w+)/gm, '<span class="keyword">new</span> <span class="init">$1</span>')
+      .replace(/\b(function|new|throw|return|var|if|else)\b/gm, '<span class="keyword">$1</span>')
+  }
+
 }

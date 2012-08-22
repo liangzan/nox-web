@@ -2,103 +2,82 @@
 
 */
 
-var files = [
-  '/docs/application.json',
-  '/docs/express.json',
-  '/docs/middleware.json',
-  '/docs/request.json',
-  '/docs/utils.json',
-  '/docs/view.json',
-  '/docs/router/index.json',
-  '/docs/router/route.json'
-];
-var docs = {};
-var count = files.length;
+$.getJSON( '/docs/docs.json', genDocs );
 
-$.each( files, function (idx, file) {
+var docsRoot = document.getElementById('docs');
+var u = utils;
 
-  $.getJSON( file, function (res) {
 
-    docs[ file ] = res;
+function genDocs(docs) {
 
-    if ( -- count === 0 ) {
-      done();
-    }
-  })
-
-});
-
-function done() {
+  var fragment = document.createDocumentFragment();
 
   $.each( docs, function (key, docs) {
+    var pre, code;
+    var name = docs.filePath.split('/');
 
-    var types = getTypes( docs );
+    name = name[ name.length - 1 ].split('.')[0];
+    name = name[0].toUpperCase() + name.slice( 1, name.length );
 
-    var elem = document.createElement('div');
-    elem.className = 'block';
-    elem.innerHTML = '<h1>' +key+ '</h1>';
+    var elem = u.elem('section');
 
-    $.each( docs, function (idx, doc) {
-      var ctx = doc.ctx,
-          name = ctx && ctx.name ? ctx.name : '',
-          type = ctx && ctx.type ? ctx.type : '',
-          tags = document.createElement( 'ul' );
+    u.append( elem, u.elem( 'h2', name ) );
 
-      if ( type !== 'method' ) {
-        return;
-      }
+    var example = ''
 
-      if (ctx.receiver) {
-        name = ctx.receiver + '.' + name;
-      }
+    $.each( docs.documentation, function (idx, doc) {
 
-      var title = document.createElement('h3');
-      title.innerHTML = name;
-
-      elem.appendChild( title );
+      // var tags = u.elem( 'ul' );
 
       $.each( doc.tags || [], function (idx, tag) {
-        var tagElem = document.createElement( 'li' );
+        // var tagElem = u.elem( 'li' );
 
-        tagElem.innerHTML = '@' + tag.type + (tag.types ? ' (' +tag.types.join(' | ')+ ') ' : ' ');
-        tagElem.innerHTML += tag.name || tag.description || tag.visibility || '';
+        if ( tag.tag === 'example' ) {
+          example = tag.description;
+          return;
+        }
 
-        tags.appendChild( tagElem );
+        // tagElem.className = 'tag';
+        // tagElem.innerHTML = '@' +tag.tag + ':' + tag.type + (tag.types ? ' (' +tag.types.join(' | ')+ ') ' : ' ');
+        // tagElem.innerHTML += tag.name || tag.description || tag.visibility || '';
+        // 
+        // tags.appendChild( tagElem );
       });
 
-      elem.appendChild( tags );
+      // u.append( elem, tags );
 
-      var desc = document.createElement('div');
-      desc.innerHTML = doc && doc.description ? doc.description.full : '';
+      u.append( elem, u.elem( 'div', doc.description ) );
 
-      elem.appendChild( desc );
+      if (example)
+        u.append( elem, makeExample( example ) );
 
-      var code = document.createElement('div');
-      code.className = 'code';
-      code.innerHTML = doc.code;
-
-      elem.appendChild( code );
-
-      elem.appendChild( document.createElement('hr') );
-
-      document.body.appendChild( elem );
     });
 
-    
+    u.append( fragment, elem );
   });
 
-  $('.code').codemirror({ lineNumbers:true })
+  render( fragment );
+
 }
 
-function getTypes (data) {
-  var types = $.map( docs, function (doc) {
-      if (doc.ctx) {
-        return doc.ctx.type;
-      }
-    });
 
-    $.unique( types );
+function makeExample (str) {
+  var pre = u.elem( 'pre' );
+  var code = u.elem( 'code' );
 
-    return types;
+  code.innerHTML = u.highlight( str );
+
+  u.append( pre, code );
+
+  return pre;
 }
-//$('.code').codemirror({ lineNumbers:true });
+
+function render (fragment) {
+  var elem, elems = u.toList( fragment.childNodes );
+
+  while( elem = elems.shift() ) {
+    u.append( docsRoot, elem )
+  }
+}
+
+

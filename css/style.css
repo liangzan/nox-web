@@ -1,3 +1,5 @@
+
+
 /* HTML5 Boilerplate  */
 
 article, aside, details, figcaption, figure, footer, header, hgroup, nav, section { display: block; }
@@ -66,12 +68,44 @@ td { vertical-align: top; }
 
 
 
-.CodeMirror-scroll {
-  height: auto;
-  overflow-y: hidden;
-  overflow-x: auto;
+body {
+    font: 13px/1.5 'Open Sans', Arial, sans-serif;
 }
 
+/* code */
+
+p code {
+  background: #efefef;
+  border: 1px solid #eaeaea;
+  font-family: monaco, monospace;
+  font-size: .75em;
+  padding: 2px 8px;
+  -webkit-border-radius: 3px;
+}
+
+pre {
+  color: #353535;
+  font-size: 14px;
+  line-height: 1.4;
+  margin: 20px 0;
+  padding: 20px;
+  background: white;
+  border: 1px solid #e7e7e7;
+  border-bottom: 1px solid #ddd;
+  -webkit-box-shadow: 0 1px 3px 0 #eee;
+  -webkit-border-radius: 3px;
+}
+
+pre code {
+  font-family: monaco, monospace;
+  font-size: .8em;
+}
+
+code .comment { color: #888 }
+code .init { color: #2F6FAD }
+code .string { color: #5890AD }
+code .keyword { color: #8A6343 }
+code .number { color: #2F6FAD }
 
 
 
