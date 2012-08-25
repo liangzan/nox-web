@@ -2,7 +2,7 @@
 
 */
 
-$.getJSON( '/docs/docs.json', genDocs );
+$.getJSON( '/docs/docs2.json', genDocs );
 
 var docsRoot = document.getElementById('docs');
 var u = utils;
@@ -21,7 +21,7 @@ function genDocs(docs) {
 
     var elem = u.elem('section');
 
-    u.append( elem, u.elem( 'h2', name ) );
+    u.append( fragment, u.elem( 'h2', name ) );
 
     var example = ''
 
